@@ -233,6 +233,15 @@ int evthread_use_pthreads(void);
  * If you're going to call this function, you must do so before any locks are
  * allocated.
  **/
+
+//用户只需在调用evthread_use_pthreads或者evthread_use_windows_threads之后，
+//调用evthread_enable_lock_debuging()函数即可开启调试锁的功能
+/*
+libevent 检测如下事件：
+1. 解锁自己(线程)没有持有的锁
+2. 在未解锁前，自己(线程)再次锁定一个非递归锁。
+Libevent通过一些变量记录锁的使用情况，当检查到这些锁的错误使用时，就调用abort，退出运行。
+*/
 void evthread_enable_lock_debuging(void);
 
 #endif /* _EVENT_DISABLE_THREAD_SUPPORT */

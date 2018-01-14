@@ -281,10 +281,14 @@ struct name {								\
 #define TAILQ_HEAD_INITIALIZER(head)					\
 	{ NULL, &(head).tqh_first }
 
+
+//和前面的TAILQ_HEAD不同，这里的结构体并没有name.即没有结构体名。  
+//所以该结构体只能作为一个匿名结构体。所以，它一般都是另外一个结构体  
+//或者共用体的成员 
 #define TAILQ_ENTRY(type)						\
 struct {								\
 	struct type *tqe_next;	/* next element */			\
-	struct type **tqe_prev;	/* address of previous next element */	\
+	struct type **tqe_prev;	/* address of previous next element  二级指针存储的是一级地址变量的地址值 */	\
 }
 
 /*

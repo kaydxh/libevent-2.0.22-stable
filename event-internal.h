@@ -111,6 +111,7 @@ struct eventop {
 
 #ifdef EVMAP_USE_HT
 #include "ht-internal.h"
+//Libevent中的哈希表只会用于Windows系统
 struct event_map_entry;
 HT_HEAD(event_io_map, event_map_entry);
 #else
@@ -124,7 +125,7 @@ HT_HEAD(event_io_map, event_map_entry);
 struct event_signal_map {
 	/* An array of evmap_io * or of evmap_signal *; empty entries are
 	 * set to NULL. */
-	void **entries;
+	void **entries; //二级指针，evmap_signal*数组  
 	/* The number of entries available in entries */
 	int nentries;
 };
@@ -302,11 +303,11 @@ struct event_config_entry {
 /** Internal structure: describes the configuration we want for an event_base
  * that we're about to allocate. */
 struct event_config {
-	TAILQ_HEAD(event_configq, event_config_entry) entries;
+	TAILQ_HEAD(event_configq, event_config_entry) entries; //保存method（IO多路复用的名称）的列表
 
-	int n_cpus_hint;
-	enum event_method_feature require_features;
-	enum event_base_config_flag flags;
+	int n_cpus_hint; //暗示cpu个数
+	enum event_method_feature require_features; //多路IO复用特征 ，通过event_config_require_features函数设置
+	enum event_base_config_flag flags; //通过event_config_set_flag函数设置
 };
 
 /* Internal use only: Functions that might be missing from <sys/queue.h> */

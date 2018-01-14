@@ -198,13 +198,18 @@ evmap_io_clear(struct event_io_map* ctx)
 /** Expand 'map' with new entries of width 'msize' until it is big enough
 	to store a value in 'slot'.
  */
+
+//slot是信号值sig，或者文件描述符fd. 
+//当sig或者fd >= map的nentries变量时就会调用此函数
 static int
-evmap_make_space(struct event_signal_map *map, int slot, int msize)
+evmap_make_space(struct event_signal_map *map, int slot, int msize) //msize 等于 sizeof(struct evmap_signal *) 
 {
 	if (map->nentries <= slot) {
+		//posix标准中，信号的种类就只有32种。
 		int nentries = map->nentries ? map->nentries : 32;
 		void **tmp;
 
+		//当slot是一个文件描述符时，就会大于32 
 		while (nentries <= slot)
 			nentries <<= 1;
 
@@ -212,6 +217,8 @@ evmap_make_space(struct event_signal_map *map, int slot, int msize)
 		if (tmp == NULL)
 			return (-1);
 
+		//清零是很有必要的。因为tmp是二级指针，数组里面的元素是一个指针，从&tmp[map->nentries]地址开始清0
+		//因为tmp是二级指针，memset(tmp, 0, nentries * msize); 现在 &tmp[0]~&tmp[map->nentries - 1]有数据
 		memset(&tmp[map->nentries], 0,
 		    (nentries - map->nentries) * msize);
 

@@ -457,6 +457,7 @@ event_base_new(void)
 
 /** Return true iff 'method' is the name of a method that 'cfg' tells us to
  * avoid. */
+//参数method指明的多路IO复用函数是不是被参数cfg所禁用了。如果是禁用了，返回非0值。不禁用就返回0
 static int
 event_config_is_avoided_method(const struct event_config *cfg,
     const char *method)
@@ -559,6 +560,8 @@ event_base_new_with_config(const struct event_config *cfg)
 	event_debug_mode_too_late = 1;
 #endif
 
+	//之所以不用mm_malloc是因为mm_malloc并不会清零该内存区域。  
+    //而这个函数是会清零申请到的内存区域。这相当于给base初始化  
 	if ((base = mm_calloc(1, sizeof(struct event_base))) == NULL) {
 		event_warn("%s: calloc", __func__);
 		return NULL;
@@ -629,13 +632,25 @@ event_base_new_with_config(const struct event_config *cfg)
 	/* prepare for threading */
 
 #ifndef _EVENT_DISABLE_THREAD_SUPPORT
+
+	//对于th_base_lock变量，目前的值为NULL.  
+   	//EVTHREAD_LOCKING_ENABLED宏是测试_evthread_lock_fns.lock  
+   	//是否不为NULL 
 	if (EVTHREAD_LOCKING_ENABLED() &&
 	    (!cfg || !(cfg->flags & EVENT_BASE_FLAG_NOLOCK))) {
 		int r;
-		EVTHREAD_ALLOC_LOCK(base->th_base_lock,
+
+		/*
+		如果_evthread_lock_fns.lock为NULL，那么th_base_lock成员肯定为NULL
+		#define EVTHREAD_ALLOC_LOCK(lockvar, locktype)		\
+			((lockvar) = _evthread_lock_fns.alloc ?		\
+	    		_evthread_lock_fns.alloc(locktype) : NULL)
+
+		*/
+		EVTHREAD_ALLOC_LOCK(base->th_base_lock, //申请锁变量 
 		    EVTHREAD_LOCKTYPE_RECURSIVE);
 		base->defer_queue.lock = base->th_base_lock;
-		EVTHREAD_ALLOC_COND(base->current_event_cond);
+		EVTHREAD_ALLOC_COND(base->current_event_cond); 
 		r = evthread_make_base_notifiable(base);
 		if (r<0) {
 			event_warnx("%s: Unable to make base notifiable.", __func__);
@@ -952,6 +967,7 @@ event_config_free(struct event_config *cfg)
 	mm_free(cfg);
 }
 
+//可以调用多次，实现多个flag
 int
 event_config_set_flag(struct event_config *cfg, int flag)
 {
@@ -968,11 +984,13 @@ event_config_avoid_method(struct event_config *cfg, const char *method)
 	if (entry == NULL)
 		return (-1);
 
+	//复制字符串，把method指明的各个名称记录到entries成员变量中
 	if ((entry->avoid_method = mm_strdup(method)) == NULL) {
 		mm_free(entry);
 		return (-1);
 	}
 
+	//插入到队列中
 	TAILQ_INSERT_TAIL(&cfg->entries, entry, next);
 
 	return (0);

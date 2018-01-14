@@ -124,7 +124,15 @@ struct event {
 	void *ev_arg;
 };
 
+
+/*
+struct event_list {					
+	struct event *tqh_first;			
+	struct event **tqh_last;			
+};
+*/
 TAILQ_HEAD (event_list, event);
+
 
 #ifdef _EVENT_DEFINED_TQENTRY
 #undef TAILQ_ENTRY

@@ -369,6 +369,7 @@ int event_base_dispatch(struct event_base *);
  @param eb the event_base structure returned by event_base_new()
  @return a string identifying the kernel event mechanism (kqueue, epoll, etc.)
  */
+//该函数返回值是对应event_base* 当前所采用的多路IO复用函数是哪个
 const char *event_base_get_method(const struct event_base *);
 
 /**
@@ -383,6 +384,8 @@ const char *event_base_get_method(const struct event_base *);
      The end of the array is indicated by a NULL pointer.  If an
      error is encountered NULL is returned.
 */
+
+//获取当前系统所支持的多路IO复用函数有哪些
 const char **event_get_supported_methods(void);
 
 /**
@@ -429,14 +432,19 @@ int event_config_avoid_method(struct event_config *cfg, const char *method);
 */
 enum event_method_feature {
     /** Require an event method that allows edge-triggered events with EV_ET. */
+    //支持边沿触发
     EV_FEATURE_ET = 0x01,
     /** Require an event method where having one event triggered among
      * many is [approximately] an O(1) operation. This excludes (for
      * example) select and poll, which are approximately O(N) for N
      * equal to the total number of possible events. */
+
+    //添加、删除、或者确定哪个事件激活这些动作的时间复杂度都为O(1)  
+    //select、poll是不能满足这个特征的.epoll则满足 
     EV_FEATURE_O1 = 0x02,
     /** Require an event method that allows file descriptors as well as
      * sockets. */
+    //支持任意的文件描述符，而不能仅仅支持套接字
     EV_FEATURE_FDS = 0x04
 };
 
@@ -448,12 +456,15 @@ enum event_method_feature {
     @see event_config_set_flag(), event_base_new_with_config(),
        event_method_feature
  */
+//event_config_set_flag
 enum event_base_config_flag {
 	/** Do not allocate a lock for the event base, even if we have
 	    locking set up. */
+  //不要为event_base分配锁。设置这个选项可以为event_base节省一点加锁和解锁的时间，但是当多个线程访问event_base会变得不安全
 	EVENT_BASE_FLAG_NOLOCK = 0x01,
 	/** Do not check the EVENT_* environment variables when configuring
 	    an event_base  */
+  //选择多路IO复用函数时，不检测EVENT_*环境变量。使用这个标志要考虑清楚：因为这会使得用户更难调试程序与Libevent之间的交互
 	EVENT_BASE_FLAG_IGNORE_ENV = 0x02,
 	/** Windows only: enable the IOCP dispatcher at startup
 
@@ -465,6 +476,9 @@ enum event_base_config_flag {
 	/** Instead of checking the current time every time the event loop is
 	    ready to run timeout callbacks, check after each timeout callback.
 	 */
+
+  //在执行event_base_loop的时候没有cache时间。该函数的while循环会经常取系统时间，
+  //如果cache时间，那么就取cache的。如果没有的话，就只能通过系统提供的函数来获取系统时间。这将更耗时
 	EVENT_BASE_FLAG_NO_CACHE_TIME = 0x08,
 
 	/** If we are using the epoll backend, this flag says that it is
@@ -481,6 +495,15 @@ enum event_base_config_flag {
 	    This flag has no effect if you wind up using a backend other than
 	    epoll.
 	 */
+
+  /*
+  告知Libevent，如果决定使用epoll这个多路IO复用函数，
+  可以安全地使用更快的基于changelist 的多路IO复用函数：epoll-changelist多路IO复用可以在多路IO复用函数调用之间，
+  同样的fd 多次修改其状态的情况下，避免不必要的系统调用。但是如果传递任何使用dup()或者其变体克隆的fd给Libevent，
+  epoll-changelist多路IO复用函数会触发一个内核bug，导致不正确的结果。
+  在不使用epoll这个多路IO复用函数的情况下，这个标志是没有效果的。
+  也可以通过设置EVENT_EPOLL_USE_CHANGELIST 环境变量来打开epoll-changelist选项
+  */
 	EVENT_BASE_FLAG_EPOLL_USE_CHANGELIST = 0x10
 };
 

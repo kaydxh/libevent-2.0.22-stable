@@ -29,7 +29,7 @@
 #define HT_ENTRY(type)                          \
   struct {                                      \
     struct type *hte_next;                      \
-    unsigned hte_hash;                          \
+    unsigned hte_hash;       /*用来存储前面的hashsocket函数的返回值*/                   \
   }
 #else
 #define HT_ENTRY(type)                          \

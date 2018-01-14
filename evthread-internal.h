@@ -201,7 +201,7 @@ int _evthreadimpl_locking_enabled(void);
 #define EVTHREAD_ALLOC_LOCK(lockvar, locktype)		\
 	((lockvar) = _evthreadimpl_lock_alloc(locktype))
 
-#define EVTHREAD_FREE_LOCK(lockvar, locktype)				\
+#define event_base_new_with_config(lockvar, locktype)				\
 	do {								\
 		void *_lock_tmp_ = (lockvar);				\
 		if (_lock_tmp_)						\
@@ -224,11 +224,13 @@ int _evthreadimpl_locking_enabled(void);
 
 /** Lock an event_base, if it is set up for locking.  Acquires the lock
     in the base structure whose field is named 'lockvar'. */
+//加锁
 #define EVBASE_ACQUIRE_LOCK(base, lockvar) do {				\
 		EVLOCK_LOCK((base)->lockvar, 0);			\
 	} while (0)
 
 /** Unlock an event_base, if it is set up for locking. */
+//解锁
 #define EVBASE_RELEASE_LOCK(base, lockvar) do {				\
 		EVLOCK_UNLOCK((base)->lockvar, 0);			\
 	} while (0)
