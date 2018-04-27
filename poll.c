@@ -210,7 +210,7 @@ poll_dispatch(struct event_base *base, struct timeval *tv)
 static int
 poll_add(struct event_base *base, int fd, short old, short events, void *_idx)
 {
-	struct pollop *pop = base->evbase;
+	struct pollop *pop = base->evbase; //evbase存放对应的io复用结构体，使用到fd和对应的监听事件等数据，就必须要获取那个IO复用结构体。
 	struct pollfd *pfd = NULL;
 	struct pollidx *idx = _idx;
 	int i;

@@ -590,6 +590,7 @@ event_base_new_with_config(const struct event_config *cfg)
 
 	should_check_environment =
 	    !(cfg && (cfg->flags & EVENT_BASE_FLAG_IGNORE_ENV));
+		//遍历数组的元素
 
 	for (i = 0; eventops[i] && !base->evbase; i++) {
 		if (cfg != NULL) {
@@ -607,8 +608,10 @@ event_base_new_with_config(const struct event_config *cfg)
 		    event_is_method_disabled(eventops[i]->name))
 			continue;
 
+		//找到了一个满足条件的多路IO复用函数  
 		base->evsel = eventops[i];
 
+		//初始化evbase
 		base->evbase = base->evsel->init(base);
 	}
 

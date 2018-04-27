@@ -59,7 +59,8 @@ extern "C" {
 /** Structure to define the backend of a given event_base. */
 struct eventop {
 	/** The name of this backend. */
-	const char *name;
+	//多路IO复用函数的名字  
+	const char *name; 
 	/** Function to set up an event_base to use this backend.  It should
 	 * create a new structure holding whatever information is needed to
 	 * run the backend, and return it.  The returned pointer will get
@@ -87,15 +88,18 @@ struct eventop {
 	void (*dealloc)(struct event_base *);
 	/** Flag: set if we need to reinitialize the event base after we fork.
 	 */
+	//是否要重新初始化
 	int need_reinit;
 	/** Bit-array of supported event_method_features that this backend can
 	 * provide. */
+	//多路IO复用的特征
 	enum event_method_feature features;
 	/** Length of the extra information we should record for each fd that
 	    has one or more active events.  This information is recorded
 	    as part of the evmap entry for each fd, and passed as an argument
 	    to the add and del functions above.
 	 */
+	//额外信息的长度。有些多路IO复用函数需要额外的信息  
 	size_t fdinfo_len;
 };
 
@@ -173,6 +177,11 @@ struct event_base {
 	 * backend. */
 	const struct eventop *evsel;
 	/** Pointer to backend-specific data. */
+	/*
+	 像select、poll、epoll之类多路IO复用函数在调用时要传入一些数据，
+	 比如监听的文件描述符fd，监听的事件有哪些。
+	 在Libevent中，这些数据都不是保存在event_base这个结构体中的，而是存放在evbase这个指针指向的一个结构体中。
+	*/
 	void *evbase;
 
 	/** List of changes to tell backend about at next dispatch.  Only used

@@ -85,8 +85,8 @@ struct name {					\
 
 struct event_base;
 struct event {
-	TAILQ_ENTRY(event) ev_active_next;
-	TAILQ_ENTRY(event) ev_next;
+	TAILQ_ENTRY(event) ev_active_next; //激活队列 
+	TAILQ_ENTRY(event) ev_next; //注册事件队列  
 	/* for managing timeouts */
 	union {
 		TAILQ_ENTRY(event) ev_next_with_common_timeout;

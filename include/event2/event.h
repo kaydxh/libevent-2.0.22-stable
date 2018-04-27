@@ -514,6 +514,7 @@ enum event_base_config_flag {
 
    @see event_method_feature
  */
+//函数则是获取参数event_base当前所采用的特征是什么
 int event_base_get_features(const struct event_base *base);
 
 /**
